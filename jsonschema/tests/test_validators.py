@@ -464,7 +464,7 @@ class TestValidationErrorMessages(TestCase):
         message = self.message_for(
             instance="something",
             schema=False,
-            cls=validators.Draft6Validator,
+            cls=validators.Draft7Validator,
         )
         self.assertIn("False schema does not allow 'something'", message)
 
@@ -1047,6 +1047,19 @@ class TestValidatorFor(TestCase):
             validators.Draft6Validator,
         )
 
+    def test_draft_7(self):
+        schema = {"$schema": "http://json-schema.org/draft-07/schema"}
+        self.assertIs(
+            validators.validator_for(schema),
+            validators.Draft7Validator,
+        )
+
+        schema = {"$schema": "http://json-schema.org/draft-07/schema#"}
+        self.assertIs(
+            validators.validator_for(schema),
+            validators.Draft7Validator,
+        )
+
     def test_True(self):
         self.assertIs(
             validators.validator_for(True),
@@ -1125,9 +1138,18 @@ class TestValidate(TestCase):
             validators.validate({}, schema)
             chk_schema.assert_called_once_with(schema)
 
-    def test_draft6_validator_is_the_default(self):
+    def test_draft7_validator_is_chosen(self):
+        schema = {"$schema": "http://json-schema.org/draft-07/schema#"}
         with mock.patch.object(
-            validators.Draft6Validator,
+            validators.Draft7Validator,
+            "check_schema",
+        ) as chk_schema:
+            validators.validate({}, schema)
+            chk_schema.assert_called_once_with(schema)
+
+    def test_draft7_validator_is_the_default(self):
+        with mock.patch.object(
+            validators.Draft7Validator,
             "check_schema",
         ) as chk_schema:
             validators.validate({}, {})
