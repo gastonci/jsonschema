@@ -4,13 +4,21 @@ from jsonschema import _utils
 from jsonschema.exceptions import FormatError, ValidationError
 from jsonschema.compat import iteritems
 
+custom_validators = {}
+currentKey = None
+
+def setCustomValidator(validatorName, validator):
+    global custom_validators
+    custom_validators[validatorName] = validator
 
 def patternProperties(validator, patternProperties, instance, schema):
     if not validator.is_type(instance, "object"):
         return
 
+    global currentKey
     for pattern, subschema in iteritems(patternProperties):
         for k, v in iteritems(instance):
+            currentKey = k
             if re.search(pattern, k):
                 for error in validator.descend(
                     v, subschema, path=k, schema_path=pattern,
@@ -22,7 +30,9 @@ def propertyNames(validator, propertyNames, instance, schema):
     if not validator.is_type(instance, "object"):
         return
 
+    global currentKey
     for property in instance:
+        currentKey = property
         for error in validator.descend(
             instance=property,
             schema=propertyNames,
@@ -261,7 +271,6 @@ def format(validator, format, instance, schema):
 def minLength(validator, mL, instance, schema):
     if validator.is_type(instance, "string") and len(instance) < mL:
         yield ValidationError("%r is too short" % (instance,))
-
 
 def maxLength(validator, mL, instance, schema):
     if validator.is_type(instance, "string") and len(instance) > mL:
@@ -525,6 +534,17 @@ def oneOf_draft6(validator, oneOf, instance, schema):
             "%r is valid under each of %s" % (instance, reprs)
         )
 
+def customValidation(validator, customValidations, data, schema):
+    global custom_validators
+    global currentKey
+    if not isinstance(customValidations,list):
+        yield ValidationError("custom validation must be an array: "+str(customValidations))
+    else:
+        for validation in customValidations:
+            for validationName in validation:
+                msg = custom_validators[validationName](validation[validationName],data, currentKey)
+                if isinstance(msg, str):
+                    yield ValidationError(msg)
 
 def not_(validator, not_schema, instance, schema):
     if validator.is_valid(instance, not_schema):

@@ -30,16 +30,6 @@ ErrorTree
 validators = {}
 meta_schemas = _utils.URIDict()
 
-_DEPRECATED_DEFAULT_TYPES = {
-    u"array": list,
-    u"boolean": bool,
-    u"integer": int_types,
-    u"null": type(None),
-    u"number": numbers.Number,
-    u"object": dict,
-    u"string": str_types,
-}
-
 
 def validates(version):
     """
@@ -201,7 +191,11 @@ def create(
             type_checkers=_generate_legacy_type_checks(default_types),
         )
     else:
-        default_types = _DEPRECATED_DEFAULT_TYPES
+        default_types = {
+            u"array": list, u"boolean": bool, u"integer": int_types,
+            u"null": type(None), u"number": numbers.Number, u"object": dict,
+            u"string": str_types,
+        }
         if type_checker is None:
             type_checker = _types.TypeChecker()
 
@@ -500,7 +494,47 @@ Draft6Validator = create(
     version="draft6",
 )
 
-_LATEST_VERSION = Draft6Validator
+Draft7Validator = create(
+    meta_schema=_utils.load_schema("draft6"),
+    validators={
+        u"$ref": _validators.ref,
+        u"additionalItems": _validators.additionalItems,
+        u"additionalProperties": _validators.additionalProperties,
+        u"allOf": _validators.allOf_draft6,
+        u"anyOf": _validators.anyOf_draft6,
+        u"const": _validators.const,
+        u"contains": _validators.contains,
+        u"dependencies": _validators.dependencies,
+        u"enum": _validators.enum,
+        u"exclusiveMaximum": _validators.exclusiveMaximum_draft6,
+        u"exclusiveMinimum": _validators.exclusiveMinimum_draft6,
+        u"format": _validators.format,
+        u"items": _validators.items,
+        u"maxItems": _validators.maxItems,
+        u"maxLength": _validators.maxLength,
+        u"maxProperties": _validators.maxProperties,
+        u"maximum": _validators.maximum_draft6,
+        u"minItems": _validators.minItems,
+        u"minLength": _validators.minLength,
+        u"minProperties": _validators.minProperties,
+        u"minimum": _validators.minimum_draft6,
+        u"multipleOf": _validators.multipleOf,
+        u"not": _validators.not_,
+        u"oneOf": _validators.oneOf_draft6,
+        u"pattern": _validators.pattern,
+        u"patternProperties": _validators.patternProperties,
+        u"properties": _validators.properties,
+        u"propertyNames": _validators.propertyNames,
+        u"required": _validators.required,
+        u"type": _validators.type,
+        u"uniqueItems": _validators.uniqueItems,
+        u"customValidation": _validators.customValidation
+    },
+    type_checker=_types.draft6_type_checker,
+    version="draft6",
+)
+
+_LATEST_VERSION = Draft7Validator
 
 
 class RefResolver(object):
