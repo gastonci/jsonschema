@@ -537,7 +537,7 @@ def customValidation(validator, customValidations, data, schema):
         for validation in customValidations:
             for validationName in validation:
                 msg = custom_validators[validationName](validation[validationName],data)
-                if isinstance(msg, str):
+                if msg:
                     yield ValidationError(msg)
 
 def not_(validator, not_schema, instance, schema):
