@@ -8,13 +8,16 @@ ValidationError
 th
 callables
 deque
+dereferences
 hostname
 implementers
 indices
 # ipv4/6, sigh...
 ipv
 iterable
+iteratively
 jsonschema
+metaschema
 pre
 programmatically
 recurses
@@ -28,3 +31,6 @@ validator
 validators
 versioned
 schemas
+
+Berman
+Freenode

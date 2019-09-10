@@ -1,7 +1,9 @@
 from unittest import TestCase
 import json
+import subprocess
+import sys
 
-from jsonschema import Draft4Validator, ValidationError, cli
+from jsonschema import Draft4Validator, ValidationError, cli, __version__
 from jsonschema.compat import NativeIO
 from jsonschema.exceptions import SchemaError
 
@@ -39,7 +41,7 @@ class TestParser(TestCase):
             contents = ""
         elif path == self.schema_file:
             contents = {}
-        else:
+        else:  # pragma: no cover
             self.fail("What is {!r}".format(path))
         return NativeIO(json.dumps(contents))
 
@@ -139,3 +141,11 @@ class TestCLI(TestCase):
         self.assertFalse(stdout.getvalue())
         self.assertEqual(stderr.getvalue(), "1 - 9\t1 - 8\t2 - 7\t")
         self.assertEqual(exit_code, 1)
+
+    def test_version(self):
+        version = subprocess.check_output(
+            [sys.executable, "-m", "jsonschema", "--version"],
+            stderr=subprocess.STDOUT,
+        )
+        version = version.decode("utf-8").strip()
+        self.assertEqual(version, __version__)

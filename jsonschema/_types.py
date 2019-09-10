@@ -104,7 +104,7 @@ class TypeChecker(object):
 
                 The name of the type to check.
 
-            fn (callable):
+            fn (collections.Callable):
 
                 A function taking exactly two parameters - the type
                 checker calling the function and the instance to check.
@@ -185,3 +185,4 @@ draft6_type_checker = draft4_type_checker.redefine(
         isinstance(instance, float) and instance.is_integer()
     ),
 )
+draft7_type_checker = draft6_type_checker

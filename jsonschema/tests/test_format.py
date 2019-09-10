@@ -1,6 +1,5 @@
 """
 Tests for the parts of jsonschema related to the :validator:`format` property.
-
 """
 
 from unittest import TestCase
@@ -69,3 +68,22 @@ class TestFormatChecker(TestCase):
 
         self.assertIs(cm.exception.cause, BOOM)
         self.assertIs(cm.exception.__cause__, BOOM)
+
+    def test_format_checkers_come_with_defaults(self):
+        # This is bad :/ but relied upon.
+        # The docs for quite awhile recommended people do things like
+        # validate(..., format_checker=FormatChecker())
+        # We should change that, but we can't without deprecation...
+        checker = FormatChecker()
+        with self.assertRaises(FormatError):
+            checker.check(instance="not-an-ipv4", format="ipv4")
+
+    def test_repr(self):
+        checker = FormatChecker(formats=())
+        checker.checks("foo")(lambda thing: True)
+        checker.checks("bar")(lambda thing: True)
+        checker.checks("baz")(lambda thing: True)
+        self.assertEqual(
+            repr(checker),
+            "<FormatChecker checkers=['bar', 'baz', 'foo']>",
+        )

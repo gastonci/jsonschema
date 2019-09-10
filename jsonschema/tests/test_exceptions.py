@@ -3,7 +3,6 @@ import textwrap
 
 from jsonschema import Draft4Validator, exceptions
 from jsonschema.compat import PY3
-from jsonschema.tests.compat import mock
 
 
 class TestBestMatch(TestCase):
@@ -13,7 +12,8 @@ class TestBestMatch(TestCase):
         reversed_best = exceptions.best_match(reversed(errors))
         msg = "Didn't return a consistent best match!\nGot: {0}\n\nThen: {1}"
         self.assertEqual(
-            best, reversed_best, msg=msg.format(best, reversed_best),
+            best._contents(), reversed_best._contents(),
+            msg=msg.format(best, reversed_best),
         )
         return best
 
@@ -35,7 +35,6 @@ class TestBestMatch(TestCase):
         """
         A property you *must* match is probably better than one you have to
         match a part of.
-
         """
 
         validator = Draft4Validator(
@@ -56,7 +55,6 @@ class TestBestMatch(TestCase):
 
         I.e. since only one of the schemas must match, we look for the most
         relevant one.
-
         """
 
         validator = Draft4Validator(
@@ -82,7 +80,6 @@ class TestBestMatch(TestCase):
 
         I.e. since only one of the schemas must match, we look for the most
         relevant one.
-
         """
 
         validator = Draft4Validator(
@@ -104,7 +101,6 @@ class TestBestMatch(TestCase):
         """
         Now, if the error is allOf, we traverse but select the *most* relevant
         error from the context, because all schemas here must match anyways.
-
         """
 
         validator = Draft4Validator(
@@ -254,7 +250,7 @@ class TestErrorTree(TestCase):
         tree = exceptions.ErrorTree([e1, e2])
         self.assertEqual(tree["bar"][0].errors, {"foo": e1, "quux": e2})
 
-    def test_regression_multiple_errors_with_instance(self):
+    def test_multiple_errors_with_instance(self):
         e1, e2 = (
             exceptions.ValidationError(
                 "1",
@@ -267,7 +263,6 @@ class TestErrorTree(TestCase):
                 path=["foobar", 2],
                 instance="i2"),
         )
-        # Will raise an exception if the bug is still there.
         exceptions.ErrorTree([e1, e2])
 
     def test_it_does_not_contain_subtrees_that_are_not_in_the_instance(self):
@@ -282,7 +277,6 @@ class TestErrorTree(TestCase):
         If a validator is dumb (like :validator:`required` in draft 3) and
         refers to a path that isn't in the instance, the tree still properly
         returns a subtree for that path.
-
         """
 
         error = exceptions.ValidationError(
@@ -381,16 +375,67 @@ class TestErrorInitReprStr(TestCase):
         )
 
     def test_uses_pprint(self):
-        with mock.patch("pprint.pformat") as pformat:
-            str(self.make_error())
-            self.assertEqual(pformat.call_count, 2)  # schema + instance
+        self.assertShows(
+            """
+            Failed validating u'maxLength' in schema:
+                {0: 0,
+                 1: 1,
+                 2: 2,
+                 3: 3,
+                 4: 4,
+                 5: 5,
+                 6: 6,
+                 7: 7,
+                 8: 8,
+                 9: 9,
+                 10: 10,
+                 11: 11,
+                 12: 12,
+                 13: 13,
+                 14: 14,
+                 15: 15,
+                 16: 16,
+                 17: 17,
+                 18: 18,
+                 19: 19}
+
+            On instance:
+                [0,
+                 1,
+                 2,
+                 3,
+                 4,
+                 5,
+                 6,
+                 7,
+                 8,
+                 9,
+                 10,
+                 11,
+                 12,
+                 13,
+                 14,
+                 15,
+                 16,
+                 17,
+                 18,
+                 19,
+                 20,
+                 21,
+                 22,
+                 23,
+                 24]
+            """,
+            instance=list(range(25)),
+            schema=dict(zip(range(20), range(20))),
+            validator=u"maxLength",
+        )
 
     def test_str_works_with_instances_having_overriden_eq_operator(self):
         """
         Check for https://github.com/Julian/jsonschema/issues/164 which
         rendered exceptions unusable when a `ValidationError` involved
         instances with an `__eq__` method that returned truthy values.
-
         """
 
         class DontEQMeBro(object):
@@ -409,3 +454,9 @@ class TestErrorInitReprStr(TestCase):
             schema="schema",
         )
         self.assertIn(repr(instance), str(error))
+
+
+class TestHashable(TestCase):
+    def test_hashable(self):
+        set([exceptions.ValidationError("")])
+        set([exceptions.SchemaError("")])

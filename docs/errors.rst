@@ -9,8 +9,6 @@ raised or returned, depending on which method or function is used.
 
 .. autoexception:: ValidationError
 
-    The instance didn't properly validate under the provided schema.
-
     The information carried by an error roughly breaks down into:
 
     ===============  =================  ========================
@@ -37,7 +35,7 @@ raised or returned, depending on which method or function is used.
     .. attribute:: validator
 
         The name of the failed `validator
-        <http://json-schema.org/draft-04/json-schema-validation.html#rfc.section.5>`_.
+        <https://json-schema.org/draft-04/json-schema-validation.html#rfc.section.5>`_.
 
     .. attribute:: validator_value
 
@@ -119,8 +117,6 @@ raised.
 
 .. autoexception:: SchemaError
 
-    The provided schema is malformed.
-
     The same attributes are present as for `ValidationError`\s.
 
 
@@ -137,7 +133,7 @@ These attributes can be clarified with a short example:
         }
     }
     instance = [{}, 3, "foo"]
-    v = Draft6Validator(schema)
+    v = Draft7Validator(schema)
     errors = sorted(v.iter_errors(instance), key=lambda e: e.path)
 
 The error messages in this situation are not very helpful on their own.
@@ -347,49 +343,18 @@ to guess the most relevant error in a given bunch.
 
 .. doctest::
 
-        >>> from jsonschema import Draft6Validator
+        >>> from jsonschema import Draft7Validator
         >>> from jsonschema.exceptions import best_match
 
         >>> schema = {
         ...     "type": "array",
         ...     "minItems": 3,
         ... }
-        >>> print(best_match(Draft6Validator(schema).iter_errors(11)).message)
+        >>> print(best_match(Draft7Validator(schema).iter_errors(11)).message)
         11 is not of type 'array'
 
 
 .. autofunction:: best_match
-
-    Try to find an error that appears to be the best match among given errors.
-
-    In general, errors that are higher up in the instance (i.e. for which
-    `ValidationError.path` is shorter) are considered better matches,
-    since they indicate "more" is wrong with the instance.
-
-    If the resulting match is either :validator:`oneOf` or :validator:`anyOf`,
-    the *opposite* assumption is made -- i.e. the deepest error is picked,
-    since these validators only need to match once, and any other errors may
-    not be relevant.
-
-    :argument collections.Iterable errors: the errors to select from. Do not
-        provide a mixture of errors from different validation attempts
-        (i.e. from different instances or schemas), since it won't
-        produce sensical output.
-    :argument callable key: the key to use when sorting errors. See
-        `relevance` and transitively `by_relevance` for more
-        details (the default is to sort with the defaults of that function).
-        Changing the default is only useful if you want to change the function
-        that rates errors but still want the error context descent done by
-        this function.
-
-    Returns:
-
-        the best matching error, or ``None`` if the iterable was empty
-
-    .. note::
-
-        This function is a heuristic. Its return value may change for a given
-        set of inputs from version to version if better heuristics are added.
 
 
 .. function:: relevance(validation_error)
@@ -423,7 +388,7 @@ to guess the most relevant error in a given bunch.
     ...     },
     ... }
     >>> instance = {"name": 123, "phones": {"home": [123]}}
-    >>> errors = Draft6Validator(schema).iter_errors(instance)
+    >>> errors = Draft7Validator(schema).iter_errors(instance)
     >>> [
     ...     e.path[-1]
     ...     for e in sorted(errors, key=exceptions.relevance)
@@ -432,14 +397,3 @@ to guess the most relevant error in a given bunch.
 
 
 .. autofunction:: by_relevance
-
-    Create a key function that can be used to sort errors by relevance.
-
-    :argument set weak: a collection of validator names to consider to
-        be "weak". If there are two errors at the same level of the
-        instance and one is in the set of weak validator names, the
-        other error will take priority. By default, :validator:`anyOf`
-        and :validator:`oneOf` are considered weak validators and will
-        be superseded by other same-level validation errors.
-    :argument set strong: a collection of validator names to consider to
-        be "strong"

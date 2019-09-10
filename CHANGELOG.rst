@@ -1,8 +1,20 @@
+v3.0.2
+------
+
+* Fixed a bug where ``0`` and ``False`` were considered equal by
+  ``const`` and ``enum`` (#575).
+
+v3.0.1
+------
+
+* Fixed a bug where extending validators did not preserve their notion
+  of which validator property contains ``$id`` information.
+
 v3.0.0
 ------
 
-* Support for Draft 6
-* Draft 6 is now the default
+* Support for Draft 6 and Draft 7
+* Draft 7 is now the default
 * New ``TypeChecker`` object for more complex type definitions (and overrides)
 * Falling back to isodate for the date-time format checker is no longer
   attempted, in accordance with the specification
@@ -13,7 +25,7 @@ v2.6.0
 * Support for Python 2.6 has been dropped.
 * Improve a few error messages for ``uniqueItems`` (#224) and
   ``additionalProperties`` (#317)
-* Fix an issue with ``ErrorTree``'s handling of multiple errors (#288) 
+* Fixed an issue with ``ErrorTree``'s handling of multiple errors (#288) 
 
 v2.5.0
 ------
@@ -123,7 +135,7 @@ v0.6
 * Bugfixes
 
   * Issue #30 - Wrong behavior for the dependencies property validation
-  * Fix a miswritten test
+  * Fixed a miswritten test
 
 
 v0.5
